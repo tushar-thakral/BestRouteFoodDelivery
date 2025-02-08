@@ -37,13 +37,14 @@ class TotalMinimumTimeStrategy(RouteCalculationStrategy):
 
         best_route = "Sequence = "
         self._consumer_restaurant_mapping = { consumer1: restaurant1, consumer2: restaurant2 }
-        self._objects_list = [ consumer2, restaurant1, restaurant2, consumer1 ]
+        self._objects_list = [ consumer1, consumer2, restaurant1, restaurant2 ]
         self._order_sequence = [ food_delivery_agent ]
 
         for obj in self._objects_list:
             self._visited[obj] = False
 
         def best_route_sequence(index, current_sequence, time) -> None:
+            """Uses Backtracking algorithm to find out the best route."""
 
             if index == 4:
                 if time < self._minimum_time:
@@ -54,21 +55,25 @@ class TotalMinimumTimeStrategy(RouteCalculationStrategy):
             for objec in self._objects_list:
 
                 if objec in self._consumer_restaurant_mapping and self._visited[self._consumer_restaurant_mapping[objec]] and not self._visited[objec]:
-                    time += distance_calculation_strategy.calculate_distance(self._order_sequence[-1].location, objec.location) / self._speed
+                    time_to_add = distance_calculation_strategy.calculate_distance(current_sequence[-1].location, objec.location) / self._speed
+                    time += time_to_add
                     self._visited[objec] = True
                     current_sequence.append(objec)
                     best_route_sequence(index+1, current_sequence, time)
                     self._visited[objec] = False
+                    time -= time_to_add
                     current_sequence.pop()
 
                 elif objec not in self._consumer_restaurant_mapping and not self._visited[objec]:
-                    time += distance_calculation_strategy.calculate_distance(current_sequence[-1].location, objec.location) / self._speed
+                    time_to_add = distance_calculation_strategy.calculate_distance(current_sequence[-1].location, objec.location) / self._speed
                     if objec.waiting_time > time:
-                        time += (objec.waiting_time - time)
+                        time_to_add += (objec.waiting_time - time)
+                    time += time_to_add
                     self._visited[objec] = True
                     current_sequence.append(objec)
                     best_route_sequence(index + 1, current_sequence, time)
                     self._visited[objec] = False
+                    time -= time_to_add
                     current_sequence.pop()
 
         best_route_sequence(0,[ food_delivery_agent ], 0)
