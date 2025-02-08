@@ -41,7 +41,7 @@ class TotalMinimumTimeStrategy(RouteCalculationStrategy):
         for obj in self._objects_list:
             self._visited[obj] = False
 
-        def best_route_sequence(index, visited, current_sequence, time) -> None:
+        def best_route_sequence(index, current_sequence, time) -> None:
 
             if index == 5:
                 if time < self._minimum_time:
@@ -49,7 +49,18 @@ class TotalMinimumTimeStrategy(RouteCalculationStrategy):
                     self._order_sequence = current_sequence
                     return
 
-        best_route_sequence(0, self._visited, [], 0)
+            for obj in self._objects_list:
+
+                if obj in self._consumer_restaurant_mapping and self._visited[self._consumer_restaurant_mapping[obj]]:
+                    time += distance_calculation_strategy.calculate_distance(self._order_sequence[-1].location, obj.location)
+                    self._visited[obj] = True
+                    current_sequence.append(obj)
+                    best_route_sequence(index+1, current_sequence, time)
+                    self._visited[obj] = False
+                    current_sequence.pop()
+
+
+        best_route_sequence(0,[], 0)
 
 
 
