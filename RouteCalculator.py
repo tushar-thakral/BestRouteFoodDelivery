@@ -1,4 +1,6 @@
 from abc import ABC, abstractmethod
+from copy import deepcopy
+
 import FoodDeliveryAgent
 from Consumer import Consumer
 from DistanceCalculationStrategy import DistanceCalculationStrategy
@@ -33,9 +35,9 @@ class TotalMinimumTimeStrategy(RouteCalculationStrategy):
 
     def find_best_route(self, restaurant1: Restaurant, consumer1: Consumer, restaurant2: Restaurant, consumer2: Consumer, food_delivery_agent: FoodDeliveryAgent, distance_calculation_strategy: DistanceCalculationStrategy) -> str:
 
-        best_route = ""
+        best_route = "Sequence = "
         self._consumer_restaurant_mapping = { consumer1: restaurant1, consumer2: restaurant2 }
-        self._objects_list = [ consumer1, consumer2, restaurant1, restaurant2 ]
+        self._objects_list = [ consumer2, restaurant1, restaurant2, consumer1 ]
         self._order_sequence = [ food_delivery_agent ]
 
         for obj in self._objects_list:
@@ -43,15 +45,15 @@ class TotalMinimumTimeStrategy(RouteCalculationStrategy):
 
         def best_route_sequence(index, current_sequence, time) -> None:
 
-            if index == 5:
+            if index == 4:
                 if time < self._minimum_time:
                     self._minimum_time = time
-                    self._order_sequence = current_sequence
-                    return
+                    self._order_sequence = deepcopy(current_sequence)
+                return
 
             for objec in self._objects_list:
 
-                if objec in self._consumer_restaurant_mapping and self._visited[self._consumer_restaurant_mapping[objec]]:
+                if objec in self._consumer_restaurant_mapping and self._visited[self._consumer_restaurant_mapping[objec]] and not self._visited[objec]:
                     time += distance_calculation_strategy.calculate_distance(self._order_sequence[-1].location, objec.location) / self._speed
                     self._visited[objec] = True
                     current_sequence.append(objec)
@@ -59,7 +61,7 @@ class TotalMinimumTimeStrategy(RouteCalculationStrategy):
                     self._visited[objec] = False
                     current_sequence.pop()
 
-                elif objec not in self._consumer_restaurant_mapping:
+                elif objec not in self._consumer_restaurant_mapping and not self._visited[objec]:
                     time += distance_calculation_strategy.calculate_distance(current_sequence[-1].location, objec.location) / self._speed
                     if objec.waiting_time > time:
                         time += (objec.waiting_time - time)
