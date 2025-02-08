@@ -49,21 +49,32 @@ class TotalMinimumTimeStrategy(RouteCalculationStrategy):
                     self._order_sequence = current_sequence
                     return
 
-            for obj in self._objects_list:
+            for objec in self._objects_list:
 
-                if obj in self._consumer_restaurant_mapping and self._visited[self._consumer_restaurant_mapping[obj]]:
-                    time += distance_calculation_strategy.calculate_distance(self._order_sequence[-1].location, obj.location)
-                    self._visited[obj] = True
-                    current_sequence.append(obj)
+                if objec in self._consumer_restaurant_mapping and self._visited[self._consumer_restaurant_mapping[objec]]:
+                    time += distance_calculation_strategy.calculate_distance(self._order_sequence[-1].location, objec.location) / self._speed
+                    self._visited[objec] = True
+                    current_sequence.append(objec)
                     best_route_sequence(index+1, current_sequence, time)
-                    self._visited[obj] = False
+                    self._visited[objec] = False
                     current_sequence.pop()
 
+                elif objec not in self._consumer_restaurant_mapping:
+                    time += distance_calculation_strategy.calculate_distance(current_sequence[-1].location, objec.location) / self._speed
+                    if objec.waiting_time > time:
+                        time += (objec.waiting_time - time)
+                    self._visited[objec] = True
+                    current_sequence.append(objec)
+                    best_route_sequence(index + 1, current_sequence, time)
+                    self._visited[objec] = False
+                    current_sequence.pop()
 
-        best_route_sequence(0,[], 0)
+        best_route_sequence(0,[ food_delivery_agent ], 0)
 
+        for obj in self._order_sequence:
+            best_route += obj.name + " "
 
-
+        best_route.strip()
         return best_route
 
 

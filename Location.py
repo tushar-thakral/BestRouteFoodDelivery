@@ -2,7 +2,7 @@ from abc import ABC
 
 class Location:
 
-    def __init__(self, name: str, longitude: float, latitude: float):
+    def __init__(self, longitude: float, latitude: float):
         self._longitude = longitude
         self._latitude = latitude
 
